@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Expense Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <input id="personName" placeholder="Enter person name">
+  <button onclick="loadUser()">Load</button>
+
+  <div class="card">
+    <input id="expenseName" placeholder="Expense name">
+    <input id="amount" type="number" placeholder="Amount ₹">
+
+    <select id="category">
+      <option>Food</option>
+      <option>Travel</option>
+      <option>Shopping</option>
+      <option>Other</option>
+    </select>
+
+    <button onclick="addExpense()">+ Add Expense</button>
+  </div>
+
+  <div class="filters">
+    <button onclick="showAll()">All</button>
+    <button onclick="showToday()">Today</button>
+    <button onclick="showMonth()">This Month</button>
+  </div>
+
+  <h3 id="total">Total: ₹ 0</h3>
+
+  <div class="graph-box">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div id="list"></div>
+
+  <!-- SHOW DATA BUTTON -->
+  <button class="show-btn" onclick="showStoredData()">📂 Show Stored Data</button>
+
+  <!-- STORED DATA DISPLAY -->
+  <div id="storedData" class="stored-data"></div>
+
+  <!-- CLEAR DATA -->
+  <button class="clear-btn" onclick="clearAllData()">🗑 Clear All Data</button>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
