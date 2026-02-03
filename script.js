@@ -1,5 +1,5 @@
 let currentUser = "";
-let chart;
+let chart = null;
 
 function loadUser() {
   currentUser = personName.value.trim();
@@ -18,7 +18,7 @@ function saveData(data) {
 function addExpense() {
   if (!currentUser) return alert("Load person first");
 
-  const name = expenseName.value;
+  const name = expenseName.value.trim();
   const amt = Number(amount.value);
   const cat = category.value;
 
@@ -34,28 +34,31 @@ function addExpense() {
 
   saveData(data);
   renderExpenses(data);
+
+  expenseName.value = "";
+  amount.value = "";
 }
 
 function renderExpenses(data) {
   list.innerHTML = "";
-  let total = 0;
+  let sum = 0;
   let catTotal = {};
 
   data.forEach((e, i) => {
-    total += e.amount;
+    sum += e.amount;
     catTotal[e.category] = (catTotal[e.category] || 0) + e.amount;
 
     list.innerHTML += `
       <div class="expense">
         <b>${e.name}</b> - ₹${e.amount}<br>
         ${e.category}<br>
-        ${new Date(e.date).toLocaleString()}
+        ${new Date(e.date).toLocaleString()}<br><br>
         <button onclick="deleteExpense(${i})">Delete</button>
       </div>
     `;
   });
 
-  total.innerText = `Total: ₹ ${total}`;
+  total.innerText = `Total: ₹ ${sum}`;
   drawChart(catTotal);
 }
 
@@ -67,44 +70,59 @@ function deleteExpense(i) {
 }
 
 function drawChart(catTotal) {
+  const ctx = document.getElementById("chart").getContext("2d");
   if (chart) chart.destroy();
-  chart = new Chart(chart, {
+
+  chart = new Chart(ctx, {
     type: "pie",
     data: {
       labels: Object.keys(catTotal),
-      datasets: [{ data: Object.values(catTotal) }]
+      datasets: [{
+        data: Object.values(catTotal)
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
     }
   });
 }
 
 /* FILTERS */
-function showAll() { renderExpenses(getData()); }
+function showAll() {
+  renderExpenses(getData());
+}
+
 function showToday() {
   const t = new Date().toDateString();
-  renderExpenses(getData().filter(e => new Date(e.date).toDateString() === t));
+  renderExpenses(getData().filter(e =>
+    new Date(e.date).toDateString() === t
+  ));
 }
+
 function showMonth() {
   const m = new Date().getMonth();
-  renderExpenses(getData().filter(e => new Date(e.date).getMonth() === m));
+  renderExpenses(getData().filter(e =>
+    new Date(e.date).getMonth() === m
+  ));
 }
 
-/* ✅ SHOW STORED DATA PROPERLY */
+/* SHOW STORED DATA WITH EXPENSES */
 function showStoredData() {
   const box = document.getElementById("storedData");
-  box.innerHTML = "<h3>📊 Stored Data</h3>";
-
-  if (localStorage.length === 0) {
-    box.innerHTML += "<p>No data found</p>";
-    return;
-  }
+  box.innerHTML = "<h3>Stored Users</h3>";
 
   for (let key in localStorage) {
     const data = JSON.parse(localStorage.getItem(key));
-    box.innerHTML += `<div class="user-box"><h4>👤 ${key}</h4></div>`;
+    if (!Array.isArray(data)) continue;
+
+    box.innerHTML += `<div class="user-box"><b>${key}</b></div>`;
+
     data.forEach(e => {
       box.innerHTML += `
         <div class="expense">
-          ${e.name} | ₹${e.amount} | ${e.category}<br>
+          ${e.name} - ₹${e.amount}<br>
+          ${e.category}<br>
           ${new Date(e.date).toLocaleString()}
         </div>
       `;
@@ -112,12 +130,11 @@ function showStoredData() {
   }
 }
 
-/* 🗑 CLEAR ALL DATA */
 function clearAllData() {
-  if (confirm("Delete all stored data?")) {
+  if (confirm("Delete all data?")) {
     localStorage.clear();
-    storedData.innerHTML = "";
     list.innerHTML = "";
+    storedData.innerHTML = "";
     total.innerText = "Total: ₹ 0";
     if (chart) chart.destroy();
   }
